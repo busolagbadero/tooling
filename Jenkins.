@@ -2,12 +2,10 @@ pipeline {
     agent any
     
     stages {
-        
         stage('build app') {
             steps {
                 script {
                     echo "building the application..."
-                    
                 }
             }
         }
@@ -15,13 +13,12 @@ pipeline {
             environment {
                 IMAGE_NAME = "0.1" 
             }
-        
             steps {
                 script {
                     echo "building the docker image..."
-                    withCredentials([usernamePassword(credentialsId: 'docker-hub', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
                         sh "docker build -t gbaderobusola/busola:${IMAGE_NAME} ."
-                        sh "echo $PASS | docker login -u $USER --password-stdin"
+                        sh "echo \$DOCKER_PASSWORD | docker login -u \$DOCKER_USERNAME --password-stdin"
                         sh "docker push gbaderobusola/busola:${IMAGE_NAME}"
                     }
                 }
@@ -31,14 +28,18 @@ pipeline {
             steps {
                 script {
                     echo 'deploying docker image to EC2...'
+                    // Add your deployment steps here
                 }
             }
         }
         stage('commit version update') {
             steps {
                 script {
-                   
-                        sh "git remote set-url origin https://${USER}:${PASS}@github.com/busolagbadero/tooling.git"
+                    withCredentials([usernamePassword(credentialsId: 'github-cred', passwordVariable: 'GITHUB_PASSWORD', usernameVariable: 'GITHUB_USERNAME')]) {
+                        sh 'git config --global user.email "oguneye.lami@gmail.com"'
+                        sh 'git config --global user.name "busolagbadero"'
+
+                        sh "git remote set-url origin https://${GITHUB_USERNAME}:${GITHUB_PASSWORD}@github.com/busolagbadero/tooling.git"
                         sh 'git add .'
                         sh 'git commit -m "ci: version bump"'
                         sh 'git push origin HEAD:master'
