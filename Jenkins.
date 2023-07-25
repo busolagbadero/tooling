@@ -5,7 +5,7 @@ pipeline {
             stages {
                stage("build") {
                    steps {
-                    sh '''
+                    sh 
                     echo "Building the software"
                     pwd
                     ls -latr
@@ -37,7 +37,7 @@ pipeline {
 
        stage('Quality Gate') {
          steps {
-                    sh '''
+                    sh 
                     echo "Implementing Quality Gate Checks"
                     '''
          }
@@ -47,9 +47,9 @@ pipeline {
        stage('Deploy to Dev environment') {
         when { branch pattern: "^feature.*|^bug.*|^dev", comparator: "REGEXP"}
          steps {
-                    sh '''
+                    sh 
                     echo "Deploying the software to Non-Production Environment only from Feature Branch"
-                    '''
+                    
          }
        }
 
@@ -57,10 +57,10 @@ pipeline {
                        when {
                 expression { BRANCH_NAME ==~ /(integration|develop|master)/ }
             }
-         steps {
-                    sh '''
+         steps 
+                    sh 
                     echo "Deploying the software to Integration Environment from Develop branch for further integration tests"
-                    '''
+                    
          }
        }
 
@@ -68,9 +68,9 @@ pipeline {
        stage('Trigger Upstream Piepline and Deploy to pre-production') {
         when { buildingTag() }
          steps {
-                    sh '''
+                    sh 
                     echo "Deploying the software to Production Environment from Master branch or a Git Tag"
-                    '''
+                    
          }
        }
 
