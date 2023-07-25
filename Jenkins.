@@ -1,24 +1,52 @@
 pipeline {
     agent any
+    
     stages {
-        stage('test') {
+        
+        stage('build app') {
             steps {
                 script {
-                    echo "Testing the application..."
+                    echo "building the application..."
+                    
                 }
             }
         }
-        stage('build') {
+        stage('build image') {
+            environment {
+                IMAGE_NAME = "0.1" 
+            }
+        
             steps {
                 script {
-                    echo "Building the application..."
+                    echo "building the docker image..."
+                    withCredentials([usernamePassword(credentialsId: 'docker-hub', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                        sh "docker build -t gbaderobusola/busola:${IMAGE_NAME} ."
+                        sh "echo $PASS | docker login -u $USER --password-stdin"
+                        sh "docker push gbaderobusola/busola:${IMAGE_NAME}"
+                    }
                 }
             }
         }
         stage('deploy') {
             steps {
                 script {
-                    echo "Deploying the application..."
+                    echo 'deploying docker image to EC2...'
+                }
+            }
+        }
+        stage('commit version update') {
+            steps {
+                script {
+                    withCredentials([usernamePassword(credentialsId: 'github-cred', passwordVariable: 'PASS', usernameVariable: 'USER')]) {
+                        // git config here for the first time run
+                        sh 'git config --global user.email "oguneye.lami@gmail.com"'
+                        sh 'git config --global user.name "busolagbadero"'
+
+                        sh "git remote set-url origin https://${USER}:${PASS}@github.com/busolagbadero/tooling.git"
+                        sh 'git add .'
+                        sh 'git commit -m "ci: version bump"'
+                        sh 'git push origin HEAD:master'
+                    }
                 }
             }
         }
