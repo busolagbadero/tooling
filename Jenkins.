@@ -38,32 +38,17 @@ pipeline {
         success {
             echo "Pipeline completed successfully!"
             
-            // Send Slack notification
-            slackSend color: 'good', message: "Pipeline completed successfully!"
-            
-            // Send email notification
-            emailext (
-                subject: "Pipeline Successful",
-                body: "The pipeline ran successfully. You can review the artifacts at ${env.BUILD_URL}",
-                to: "oguneye.lami@gmail.com"
-            )
+            }
         }
 
         failure {
             echo "Pipeline failed!"
             
-            // Send Slack notification
-            slackSend color: 'danger', message: "Pipeline failed!"
             
-            // Send email notification
-            emailext (
-                subject: "Pipeline Failed",
-                body: "The pipeline failed. You can review the console output at ${env.BUILD_URL}",
-                to: "oguneye.lami@gmail.com"
-            )
+            }
         }
-    }
-}
+    
+
 
 
 
