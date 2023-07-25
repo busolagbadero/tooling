@@ -1,15 +1,25 @@
 pipeline {
   agent any
-
   stages {
-
        stage('Building the software') {
-         steps {
-             echo 'Building the software'
+            stages {
+               stage("build") {
+                   steps {
                     sh '''
                     echo "Building the software"
+                    pwd
+                    ls -latr
+                    #sleep 3000000
+                    docker build .
                     '''
-         }
+                   }
+               }
+               stage("test") {
+                   steps {
+                       sh "Testing the software"
+                   }
+               }
+            }
        }
 
 
@@ -43,7 +53,7 @@ pipeline {
          }
        }
 
-       stage('Deploy to Integration environment') {
+       stage('Trigger Upstream Piepline and Deploy to Integration environment') {
                        when {
                 expression { BRANCH_NAME ==~ /(integration|develop|master)/ }
             }
@@ -54,19 +64,8 @@ pipeline {
          }
        }
 
-       stage('Run Integration tests') {
-                       when {
-                expression { BRANCH_NAME ==~ /(integration|develop|master)/ }
-            }
-         steps {
-                    sh '''
-                    echo "Run Integration Tests"
-                    '''
-         }
-       }
 
-
-       stage('Deploy to pre-production') {
+       stage('Trigger Upstream Piepline and Deploy to pre-production') {
         when { buildingTag() }
          steps {
                     sh '''
@@ -75,7 +74,7 @@ pipeline {
          }
        }
 
-       stage('Deploy to Production') {
+       stage('Trigger Upstream Piepline and Deploy to Production') {
         when { buildingTag() }
          steps {
 
@@ -90,6 +89,5 @@ pipeline {
          }
        }
 
-// Next stage Must always be above thsi line 
-      }
     }
+}
