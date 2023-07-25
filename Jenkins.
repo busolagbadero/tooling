@@ -39,20 +39,10 @@ pipeline {
                         sh 'git config --global user.email "oguneye.lami@gmail.com"'
                         sh 'git config --global user.name "busolagbadero"'
 
-                        // Create and switch to a new branch
-                        sh 'git checkout -b feature/version-update'
-
-                        // Perform any changes to files (e.g., version update)
-                        // You can also include other necessary build steps here if needed
-
+                        sh "git remote set-url origin https://${GITHUB_USERNAME}:\\$GITHUB_PASSWORD@github.com/busolagbadero/tooling.git"
                         sh 'git add .'
                         sh 'git commit -m "ci: version bump"'
-
-                        // Push the changes to the remote repository
-                        sh 'git push origin feature/version-update'
-
-                        // Switch back to the original branch (e.g., "master")
-                        sh 'git checkout master'
+                        sh 'git push origin master'
                     }
                 }
             }
