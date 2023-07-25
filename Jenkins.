@@ -2,44 +2,40 @@ pipeline {
     agent any
     
     stages {
-        stage('build app') {
-            steps {
-                script {
-                    echo "building the application..."
-                }
-            }
-        }
-        stage('build image') {
-            environment {
-                IMAGE_NAME = "0.1" 
-            }
-            steps {
-                script {
-                    echo "building the docker image..."
-                    withCredentials([usernamePassword(credentialsId: 'docker-hub', passwordVariable: 'DOCKER_PASSWORD', usernameVariable: 'DOCKER_USERNAME')]) {
-                        sh "docker build -t gbaderobusola/busola:${IMAGE_NAME} ."
-                        sh "echo \$DOCKER_PASSWORD | docker login -u \$DOCKER_USERNAME --password-stdin"
-                        sh "docker push gbaderobusola/busola:${IMAGE_NAME}"
-                    }
-                }
-            }
-        }
-        stage('deploy') {
-            steps {
-                script {
-                    echo 'deploying docker image to EC2...'
-                    // Add your deployment steps here
-                }
-            }
-        }
-         post {
-        // Post-action for successful pipeline run
+        // ... stages ...
+    }
+
+    post {
         success {
             echo "Pipeline completed successfully!"
+            // Additional actions for successful pipeline run
 
-                    }
-                }
-            }
+            // Send Slack notification
+            slackSend color: 'good', message: "Pipeline completed successfully!"
+
+            // Send email notification
+            emailext (
+                subject: "Pipeline Successful",
+                body: "The pipeline ran successfully. You can review the artifacts at ${env.BUILD_URL}",
+                to:  "oguneye.lami@gmail.com"
+            )
         }
-    
+
+        failure {
+            echo "Pipeline failed!"
+            // Additional actions for failed pipeline run
+
+            // Send Slack notification
+            slackSend color: 'danger', message: "Pipeline failed!"
+
+            // Send email notification
+            emailext (
+                subject: "Pipeline Failed",
+                body: "The pipeline failed. You can review the console output at ${env.BUILD_URL}",
+                to: "oguneye.lami@gmail.com"
+            )
+        }
+    }
+}
+
 
